@@ -68,7 +68,7 @@ export class MdProgressBar {
    */
   primaryTransform() {
     let scale = this.value / 100;
-    return `scaleX(${scale})`;
+    return {transform: `scaleX(${scale})`};
   }
 
   /**
@@ -79,7 +79,7 @@ export class MdProgressBar {
   bufferTransform() {
     if (this.mode == 'buffer') {
       let scale = this.bufferValue / 100;
-      return `scaleX(${scale})`;
+      return {transform: `scaleX(${scale})`};
     }
   }
 }
@@ -88,3 +88,5 @@ export class MdProgressBar {
 function clamp(v: number, min = 0, max = 100) {
   return Math.max(min, Math.min(max, v));
 }
+
+export const MD_PROGRESS_BAR_DIRECTIVES = [MdProgressBar];

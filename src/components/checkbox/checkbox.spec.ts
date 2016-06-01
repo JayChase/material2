@@ -1,10 +1,20 @@
-import {it, beforeEach, inject, async, fakeAsync, flushMicrotasks} from '@angular/core/testing';
+import {
+    it,
+    beforeEach,
+    inject,
+    async,
+    fakeAsync,
+    flushMicrotasks,
+    tick
+} from '@angular/core/testing';
 import {FORM_DIRECTIVES, NgModel, NgControl} from '@angular/common';
 import {TestComponentBuilder, ComponentFixture} from '@angular/compiler/testing';
 import {Component, DebugElement} from '@angular/core';
 import {By} from '@angular/platform-browser';
-import {MdCheckbox} from './checkbox';
+import {MdCheckbox, MdCheckboxChange} from './checkbox';
 import {PromiseCompleter} from '@angular2-material/core/async/promise-completer';
+
+
 
 // TODO: Implement E2E tests for spacebar/click behavior for checking/unchecking
 
@@ -244,6 +254,59 @@ describe('MdCheckbox', () => {
     });
   });
 
+  describe('with change event and no initial value', () => {
+    let checkboxDebugElement: DebugElement;
+    let checkboxNativeElement: HTMLElement;
+    let checkboxInstance: MdCheckbox;
+    let testComponent: CheckboxWithChangeEvent;
+    let inputElement: HTMLInputElement;
+    let labelElement: HTMLLabelElement;
+
+    beforeEach(async(() => {
+      builder.createAsync(CheckboxWithChangeEvent).then(f => {
+        fixture = f;
+        fixture.detectChanges();
+
+        checkboxDebugElement = fixture.debugElement.query(By.directive(MdCheckbox));
+        checkboxNativeElement = checkboxDebugElement.nativeElement;
+        checkboxInstance = checkboxDebugElement.componentInstance;
+        testComponent = fixture.debugElement.componentInstance;
+        inputElement = <HTMLInputElement>checkboxNativeElement.querySelector('input');
+        labelElement = <HTMLLabelElement>checkboxNativeElement.querySelector('label');
+      });
+    }));
+
+    it('should call the change event on first change after initialization', fakeAsync(() => {
+      fixture.detectChanges();
+      expect(testComponent.lastEvent).toBeUndefined();
+
+      checkboxInstance.checked = true;
+      fixture.detectChanges();
+
+      tick();
+
+      expect(testComponent.lastEvent.checked).toBe(true);
+    }));
+
+    it('should not emit a DOM event to the change output', async(() => {
+      fixture.detectChanges();
+      expect(testComponent.lastEvent).toBeUndefined();
+
+      // Trigger the click on the inputElement, because the input will probably
+      // emit a DOM event to the change output.
+      inputElement.click();
+      fixture.detectChanges();
+
+      fixture.whenStable().then(() => {
+        // We're checking the arguments type / emitted value to be a boolean, because sometimes the
+        // emitted value can be a DOM Event, which is not valid.
+        // See angular/angular#4059
+        expect(testComponent.lastEvent.checked).toBe(true);
+      });
+
+    }));
+  });
+
   describe('with provided aria-label ', () => {
     let checkboxDebugElement: DebugElement;
     let checkboxNativeElement: HTMLElement;
@@ -471,3 +534,12 @@ class CheckboxWithAriaLabelledby {}
   template: `<md-checkbox name="test-name"></md-checkbox>`
 })
 class CheckboxWithNameAttribute {}
+
+/** Simple test component with change event */
+@Component({
+  directives: [MdCheckbox],
+  template: `<md-checkbox (change)="lastEvent = $event"></md-checkbox>`
+})
+class CheckboxWithChangeEvent {
+  lastEvent: MdCheckboxChange;
+}

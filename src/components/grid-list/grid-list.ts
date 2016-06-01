@@ -7,7 +7,8 @@ import {
   ContentChildren,
   QueryList,
   Renderer,
-  ElementRef
+  ElementRef,
+  Optional
 } from '@angular/core';
 import {MdGridTile} from './grid-tile';
 import {TileCoordinator} from './tile-coordinator';
@@ -57,7 +58,7 @@ export class MdGridList implements OnInit, AfterContentChecked {
   constructor(
       private _renderer: Renderer,
       private _element: ElementRef,
-      private _dir: Dir) {}
+      @Optional() private _dir: Dir) {}
 
   @Input()
   get cols() {
@@ -84,7 +85,7 @@ export class MdGridList implements OnInit, AfterContentChecked {
     this._setTileStyler();
   }
 
-  /** @internal */
+  /** TODO: internal */
   ngOnInit() {
     this._checkCols();
     this._checkRowHeight();
@@ -93,7 +94,7 @@ export class MdGridList implements OnInit, AfterContentChecked {
   /**
    * The layout calculation is fairly cheap if nothing changes, so there's little cost
    * to run it frequently.
-   * @internal
+   * TODO: internal
    */
   ngAfterContentChecked() {
     this._layoutTiles();
@@ -128,7 +129,8 @@ export class MdGridList implements OnInit, AfterContentChecked {
   private _layoutTiles(): void {
     let tiles = this._tiles.toArray();
     let tracker = new TileCoordinator(this.cols, tiles);
-    this._tileStyler.init(this.gutterSize, tracker, this.cols, this._dir);
+    let direction = this._dir ? this._dir.value : 'ltr';
+    this._tileStyler.init(this.gutterSize, tracker, this.cols, direction);
 
     for (let i = 0; i < tiles.length; i++) {
       let pos = tracker.positions[i];

@@ -1,19 +1,17 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  Provider,
-  Renderer,
-  ViewEncapsulation,
-  forwardRef,
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    Provider,
+    Renderer,
+    ViewEncapsulation,
+    forwardRef,
+    AfterContentInit
 } from '@angular/core';
-import {
-  NG_VALUE_ACCESSOR,
-  ControlValueAccessor,
-} from '@angular/common';
+import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/common';
 
 /**
  * Monotonically increasing integer used to auto-generate unique ids for checkbox components.
@@ -44,6 +42,12 @@ enum TransitionCheckState {
   Indeterminate
 }
 
+// A simple change event emitted by the MdCheckbox component.
+export class MdCheckboxChange {
+  source: MdCheckbox;
+  checked: boolean;
+}
+
 /**
  * A material design checkbox component. Supports all of the functionality of an HTML5 checkbox,
  * and exposes a similar API. An MdCheckbox can be either checked, unchecked, indeterminate, or
@@ -68,7 +72,7 @@ enum TransitionCheckState {
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MdCheckbox implements ControlValueAccessor {
+export class MdCheckbox implements AfterContentInit, ControlValueAccessor {
   /**
    * Attached to the aria-label attribute of the host element. In most cases, arial-labelledby will
    * take precedence so this may be omitted.
@@ -107,7 +111,7 @@ export class MdCheckbox implements ControlValueAccessor {
   @Input() name: string = null;
 
   /** Event emitted when the checkbox's `checked` value changes. */
-  @Output() change: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() change: EventEmitter<MdCheckboxChange> = new EventEmitter<MdCheckboxChange>();
 
   /** Called when the checkbox is blurred. Needed to properly implement ControlValueAccessor. */
   onTouched: () => any = () => {};
@@ -146,10 +150,13 @@ export class MdCheckbox implements ControlValueAccessor {
 
       // Only fire a change event if this isn't the first time the checked property is ever set.
       if (this._isInitialized) {
-        this.change.emit(this._checked);
+        this._emitChangeEvent();
       }
     }
+  }
 
+  /** TODO: internal */
+  ngAfterContentInit() {
     this._isInitialized = true;
   }
 
@@ -176,12 +183,18 @@ export class MdCheckbox implements ControlValueAccessor {
     }
   }
 
-  /** Implemented as part of ControlValueAccessor. */
+  /**
+   * Implemented as part of ControlValueAccessor.
+   * TODO: internal
+   */
   writeValue(value: any) {
     this.checked = !!value;
   }
 
-  /** Implemented as part of ControlValueAccessor. */
+  /**
+   * Implemented as part of ControlValueAccessor.
+   * TODO: internal
+   */
   registerOnChange(fn: any) {
     if (this._changeSubscription) {
       this._changeSubscription.unsubscribe();
@@ -189,7 +202,10 @@ export class MdCheckbox implements ControlValueAccessor {
     this._changeSubscription = <{unsubscribe: () => any}>this.change.subscribe(fn);
   }
 
-  /** Implemented as part of ControlValueAccessor. */
+  /**
+   * Implemented as part of ControlValueAccessor.
+   * TODO: internal
+   */
   registerOnTouched(fn: any) {
     this.onTouched = fn;
   }
@@ -213,6 +229,14 @@ export class MdCheckbox implements ControlValueAccessor {
     if (this._currentAnimationClass.length > 0) {
       renderer.setElementClass(elementRef.nativeElement, this._currentAnimationClass, true);
     }
+  }
+
+  private _emitChangeEvent() {
+    let event = new MdCheckboxChange();
+    event.source = this;
+    event.checked = this.checked;
+
+    this.change.emit(event);
   }
 
   /**
@@ -240,14 +264,18 @@ export class MdCheckbox implements ControlValueAccessor {
   }
 
   /**
-   * Event handler for checkbox input element.  Toggles checked state if element is not disabled.
+   * Event handler for checkbox input element.
+   * Toggles checked state if element is not disabled.
    * @param event
    * @internal
    */
   onInteractionEvent(event: Event) {
-    if (this.disabled) {
-      event.stopPropagation();
-    } else {
+    // We always have to stop propagation on the change event.
+    // Otherwise the change event, from the input element, will bubble up and
+    // emit its event object to the `change` output.
+    event.stopPropagation();
+
+    if (!this.disabled) {
       this.toggle();
     }
   }
@@ -282,3 +310,5 @@ export class MdCheckbox implements ControlValueAccessor {
     return `md-checkbox-anim-${animSuffix}`;
   }
 }
+
+export const MD_CHECKBOX_DIRECTIVES = [MdCheckbox];

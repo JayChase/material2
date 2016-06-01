@@ -8,7 +8,6 @@ import {
     Optional,
     Output,
     QueryList,
-    Type,
     ChangeDetectionStrategy,
     EventEmitter,
     Renderer
@@ -267,7 +266,7 @@ export class MdSidenavLayout implements AfterContentInit {
     }
   }
 
-  /** @internal */
+  /** TODO: internal */
   ngAfterContentInit() {
     // On changes, assert on consistency.
     this._sidenavs.changes.subscribe(() => this._validateDrawers());
@@ -372,7 +371,30 @@ export class MdSidenavLayout implements AfterContentInit {
   getPositionRight() {
     return this._getSidenavEffectiveWidth(this._right, 'push');
   }
+
+  /**
+   * Returns the horizontal offset for the content area.  There should never be a value for both
+   * left and right, so by subtracting the right value from the left value, we should always get
+   * the appropriate offset.
+   * @internal
+   */
+  getPositionOffset() {
+    return this.getPositionLeft() - this.getPositionRight();
+  }
+
+  /**
+   * This is using [ngStyle] rather than separate [style...] properties because [style.transform]
+   * doesn't seem to work right now.
+   * @internal
+   */
+  getStyles() {
+    return {
+      marginLeft: `${this.getMarginLeft()}px`,
+      marginRight: `${this.getMarginRight()}px`,
+      transform: `translate3d(${this.getPositionOffset()}px, 0, 0)`
+    };
+  }
 }
 
 
-export const MD_SIDENAV_DIRECTIVES: Type[] = [MdSidenavLayout, MdSidenav];
+export const MD_SIDENAV_DIRECTIVES = [MdSidenavLayout, MdSidenav];

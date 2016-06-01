@@ -33,7 +33,11 @@ export class MdListAvatar {}
 @Component({
   moduleId: module.id,
   selector: 'md-list-item, a[md-list-item]',
-  host: {'role': 'listitem'},
+  host: {
+    'role': 'listitem',
+    '(focus)': 'handleFocus()',
+    '(blur)': 'handleBlur()',
+  },
   templateUrl: 'list-item.html',
   encapsulation: ViewEncapsulation.None
 })
@@ -41,6 +45,9 @@ export class MdListItem implements AfterContentInit {
   @ContentChildren(MdLine) _lines: QueryList<MdLine>;
 
   /** @internal */
+  hasFocus: boolean = false;
+
+  /** TODO: internal */
   ngAfterContentInit() {
     this._setLineClass(this._lines.length);
 
@@ -55,6 +62,16 @@ export class MdListItem implements AfterContentInit {
   }
 
   constructor(private _renderer: Renderer, private _element: ElementRef) {}
+
+  /** @internal */
+  handleFocus() {
+    this.hasFocus = true;
+  }
+
+  /** @internal */
+  handleBlur() {
+    this.hasFocus = false;
+  }
 
   private _setLineClass(count: number): void {
     this._resetClasses();
@@ -73,4 +90,4 @@ export class MdListItem implements AfterContentInit {
   }
 }
 
-export const MD_LIST_DIRECTIVES: any[] = [MdList, MdListItem, MdLine, MdListAvatar];
+export const MD_LIST_DIRECTIVES = [MdList, MdListItem, MdLine, MdListAvatar];

@@ -44,7 +44,7 @@ export class MdTabGroup {
   /**
    * Waits one frame for the view to update, then upates the ink bar
    * Note: This must be run outside of the zone or it will create an infinite change detection loop
-   * @internal
+   * TODO: internal
    */
   ngAfterViewChecked(): void {
     this._zone.runOutsideAngular(() => {
@@ -113,4 +113,4 @@ export class MdTabGroup {
   }
 }
 
-export const MD_TAB_GROUP_DIRECTIVES = [MdTabGroup, MdTabLabel, MdTabContent];
+export const MD_TABS_DIRECTIVES = [MdTabGroup, MdTabLabel, MdTabContent];

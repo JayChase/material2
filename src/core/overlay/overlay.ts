@@ -1,5 +1,5 @@
 import {
-  DynamicComponentLoader,
+  ComponentResolver,
   OpaqueToken,
   Inject,
   Injectable,
@@ -11,11 +11,6 @@ import {OverlayRef} from './overlay-ref';
 import {OverlayPositionBuilder} from './position/overlay-position-builder';
 import {ViewportRuler} from './position/viewport-ruler';
 
-
-// Re-export overlay-related modules so they can be imported directly from here.
-export {OverlayState} from './overlay-state';
-export {OverlayRef} from './overlay-ref';
-export {createOverlayContainer} from './overlay-container';
 
 /** Token used to inject the DOM element that serves as the overlay container. */
 export const OVERLAY_CONTAINER_TOKEN = new OpaqueToken('overlayContainer');
@@ -39,7 +34,7 @@ let defaultState = new OverlayState();
 export class Overlay {
   constructor(
       @Inject(OVERLAY_CONTAINER_TOKEN) private _overlayContainerElement: HTMLElement,
-      private _dynamicComponentLoader: DynamicComponentLoader,
+      private _componentResolver: ComponentResolver,
       private _positionBuilder: OverlayPositionBuilder) {
   }
 
@@ -82,7 +77,7 @@ export class Overlay {
   private _createPortalHost(pane: HTMLElement): DomPortalHost {
     return new DomPortalHost(
         pane,
-        this._dynamicComponentLoader);
+        this._componentResolver);
   }
 
   /**
@@ -103,3 +98,9 @@ export const OVERLAY_PROVIDERS = [
   OverlayPositionBuilder,
   Overlay,
 ];
+
+// Re-export overlay-related modules so they can be imported directly from here.
+export {OverlayState} from './overlay-state';
+export {OverlayRef} from './overlay-ref';
+export {createOverlayContainer} from './overlay-container';
+export {OVERLAY_DIRECTIVES, ConnectedOverlayDirective, OverlayOrigin} from './overlay-directives';

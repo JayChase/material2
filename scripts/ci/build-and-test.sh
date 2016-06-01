@@ -16,10 +16,11 @@ npm run inline-resources
 
 wait_for_tunnel
 if is_lint; then
-  npm run tslint
+  npm run tslint  
   npm run ci:forbidden-identifiers
+  npm run stylelint  
 elif is_e2e; then
-  ng serve &
+  MD_APP=e2e ng serve &
   sleep 20
   ng e2e
 else
